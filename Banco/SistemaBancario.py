@@ -1,43 +1,39 @@
-import re
-from usuario import Usuario, DadosUsuario
+from Usuario import Usuario
+from Saldo import Saldo
+from Transferencia import Transferencia
+from Emprestimo import Emprestimo
+from Extrato import Extrato
+from Carteirinha import Carteirinha
 
 class SistemaBancario:
     def __init__(self):
-        self.opcao = 0
+        self.usuarios = []  # Lista de usuários cadastrados
         self.usuario_logado = None
 
-    @staticmethod
-    def exibir_mensagem_boas_vindas():
-        print("\n========================================")
-        print("        BEM VINDO AO BANCO UFMG        ")
-        print("========================================\n")
-
     def executar_aplicativo(self):
-        self.exibir_mensagem_boas_vindas()
+        while True:
+            print("\n=== Bem-vindo ao Banco UFMG ===")
+            print("1. Criar conta")
+            print("2. Fazer login")
+            print("0. Sair")
+            opcao = input("Escolha uma opção: ")
 
-        continuar_execucao = True
-
-        while continuar_execucao:
-            print("\n\n========================================\n")
-            print("Escolha uma opção:\n"
-                  "1. Cadastrar novo usuário\n"
-                  "2. Fazer login\n"
-                  "0. Encerrar o programa")
-            self.opcao = int(input("Opção: "))
-
-            if self.opcao == 1:
-                Usuario.criar_novo_usuario()
-            elif self.opcao == 2:
+            if opcao == "1":
+                self.criar_conta()
+            elif opcao == "2":
                 self.fazer_login()
-            elif self.opcao == 0:
-                print("Encerrando o programa. Adeus!")
-                continuar_execucao = False
+            elif opcao == "0":
+                print("Obrigado por usar o Banco UFMG. Até logo!")
+                break
             else:
                 print("Opção inválida. Tente novamente.")
 
+    def criar_conta(self):
+        Usuario.criar_usuario()
+
     def fazer_login(self):
         cpf = input("Digite o CPF: ")
-        usuario = next((u for u in Usuario.usuarios if u.cpf == cpf), None)
+        usuario = next((u for u in self.usuarios if u.cpf == cpf), None)
 
         if not usuario:
             print("CPF não encontrado.")
@@ -45,74 +41,86 @@ class SistemaBancario:
 
         for _ in range(3):
             senha = input("Digite a senha: ")
-            if usuario._senha == senha:
-                print("Login realizado com sucesso!")
+            if usuario.senha == senha:
                 self.usuario_logado = usuario
-                self.realizar_operacoes_apos_login()
+                print(f"Login realizado com sucesso! Bem-vindo(a), {usuario.nome}.")
+                self.menu_usuario()
                 return
             else:
                 print("Senha incorreta. Tente novamente.")
 
         print("Número máximo de tentativas excedido.")
 
-    def realizar_operacoes_apos_login(self):
+    def menu_usuario(self):
         while True:
-            print(f"Bem-vindx, {self.usuario_logado.nome}!")
-            print(f"CC: {self.usuario_logado.numero_conta_corrente}")
-            print(f"Saldo: R$ {self.usuario_logado.saldo}")
-            print("========================================")
-            print("Escolha uma ação:")
-            print("1. Fazer um novo depósito")
-            print("2. Fazer uma transferência")
-            print("3. Mostrar informações do usuário")
-            print("0. Fazer logout e voltar ao menu principal")
-            opcao = int(input("Opção: "))
+            print("\n=== Menu Principal ===")
+            print("1. Exibir saldo")
+            print("2. Realizar transferência")
+            print("3. Exibir extrato")
+            print("4. Depósito")
+            print("5. Carteirinha")
+            print("6. Crédito (Empréstimo)")
+            print("0. Logout")
+            opcao = input("Escolha uma opção: ")
 
-            if opcao == 1:
-                self.novo_deposito()
-            elif opcao == 2:
-                self.nova_transferencia()
-            elif opcao == 3:
-                self.mostrar_informacoes_usuario()
-            elif opcao == 0:
-                print("Fazendo logout e voltando ao menu principal.")
-                return
+            if opcao == "1":
+                self.exibir_saldo()
+            elif opcao == "2":
+                self.realizar_transferencia()
+            elif opcao == "3":
+                self.exibir_extrato()
+            elif opcao == "4":
+                self.realizar_deposito()
+            elif opcao == "5":
+                self.gerenciar_carteirinha()
+            elif opcao == "6":
+                self.solicitar_emprestimo()
+            elif opcao == "0":
+                print("Logout realizado. Voltando ao menu principal.")
+                self.usuario_logado = None
+                break
             else:
                 print("Opção inválida. Tente novamente.")
 
-    def novo_deposito(self):
-        valor = float(input("Informe o valor do depósito: R$ "))
-        if valor > 0:
-            self.usuario_logado._saldo += valor
-            self.usuario_logado._extrato.append(f"Depósito: +R$ {valor}")
+    def exibir_saldo(self):
+        print(self.usuario_logado.saldo.exibir_saldo())
+
+    def realizar_transferencia(self):
+        numero_conta_destino = input("Digite o número da conta destino: ")
+        Transferencia.realizar_transferencia(self.usuario_logado, self.usuarios, numero_conta_destino)
+
+    def exibir_extrato(self):
+        self.usuario_logado.extrato.exibir_extrato(self.usuario_logado.saldo.saldo)
+
+    def realizar_deposito(self):
+        try:
+            valor = float(input("Informe o valor do depósito: R$ "))
+            self.usuario_logado.saldo.adicionar_saldo(valor)
+            self.usuario_logado.extrato.adicionar_transacao("Depósito", valor)
             print("Depósito realizado com sucesso!")
-        else:
-            print("Valor inválido. O depósito deve ser maior que zero.")
+        except ValueError:
+            print("Erro: Informe um valor válido.")
 
-    def nova_transferencia(self):
-        numero_conta = input("Digite o número da conta para transferência: ")
-        destinatario = next((u for u in Usuario.usuarios if u.numero_conta_corrente == numero_conta), None)
+    def gerenciar_carteirinha(self):
+        while True:
+            print("\n=== Carteirinha ===")
+            print("1. Adicionar saldo na carteirinha")
+            print("2. Liberar catraca do RU")
+            print("0. Voltar ao menu principal")
+            opcao = input("Escolha uma opção: ")
 
-        if not destinatario or destinatario == self.usuario_logado:
-            print("Conta inválida ou não encontrada.")
-            return
+            if opcao == "1":
+                try:
+                    valor = float(input("Informe o valor a ser adicionado: R$ "))
+                    self.usuario_logado.carteirinha.adicionar_saldo(valor)
+                except ValueError:
+                    print("Erro: Informe um valor válido.")
+            elif opcao == "2":
+                self.usuario_logado.carteirinha.liberar_catraca()
+            elif opcao == "0":
+                break
+            else:
+                print("Opção inválida. Tente novamente.")
 
-        valor = float(input("Informe o valor da transferência: R$ "))
-        if valor > 0 and valor <= self.usuario_logado._saldo:
-            self.usuario_logado._saldo -= valor
-            destinatario._saldo += valor
-            self.usuario_logado._extrato.append(f"Transferência: -R$ {valor}")
-            destinatario._extrato.append(f"Transferência: +R$ {valor}")
-            print("Transferência realizada com sucesso!")
-        else:
-            print("Saldo insuficiente ou valor inválido.")
-
-    def mostrar_informacoes_usuario(self):
-        print("\nInformações do Usuário:")
-        print(self.usuario_logado.exibir_dados())
-        print(f"Saldo: R$ {self.usuario_logado.saldo}")
-        print("========================================")
-
-if __name__ == "__main__":
-    sistema = SistemaBancario()
-    sistema.executar_aplicativo()
+    def solicitar_emprestimo(self):
+        Emprestimo.solicitar_emprestimo(self.usuario_logado.renda, self.usuario_logado.saldo)
