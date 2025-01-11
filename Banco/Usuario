@@ -1,16 +1,58 @@
+from abc import ABC, abstractmethod
 import re
 import random
 
-class DadosUsuario:
+class Pessoa(ABC):
+    def __init__(self, nome, cpf):
+        self._nome = nome
+        self._cpf = cpf
+
+    @property
+    def nome(self):
+        return self._nome
+
+    @nome.setter
+    def nome(self, nome):
+        if not nome:
+            raise ValueError("O nome não pode ser vazio.")
+        self._nome = nome
+
+    @property
+    def cpf(self):
+        return self._cpf
+
+    @abstractmethod
+    def exibir_dados(self):
+        pass
+
+class DadosUsuario(Pessoa):
     def __init__(self, nome='', senha='', data_nascimento='', endereco='', cpf='', numero_conta_corrente=''):
-        self.nome = nome
-        self.senha = senha
-        self.data_nascimento = data_nascimento
-        self.endereco = endereco
-        self.cpf = cpf
-        self.numero_conta_corrente = numero_conta_corrente
-        self.saldo = 0  # Simplificado, pois Saldo e Extrato não estão implementados
-        self.extrato = []
+        super().__init__(nome, cpf)
+        self._senha = senha
+        self._data_nascimento = data_nascimento
+        self._endereco = endereco
+        self._numero_conta_corrente = numero_conta_corrente
+        self._saldo = 0
+        self._extrato = []
+
+    @property
+    def data_nascimento(self):
+        return self._data_nascimento
+
+    @property
+    def endereco(self):
+        return self._endereco
+
+    @property
+    def numero_conta_corrente(self):
+        return self._numero_conta_corrente
+
+    @property
+    def saldo(self):
+        return self._saldo
+
+    def exibir_dados(self):
+        return f"Nome: {self.nome}, CPF: {self.cpf}, Conta: {self.numero_conta_corrente}"
 
 class Usuario:
     usuarios = []
@@ -18,32 +60,32 @@ class Usuario:
 
     @staticmethod
     def criar_novo_usuario():
-        novo_usuario = DadosUsuario()
         print("\n=========================================================================")
         print("Obrigado por escolher o Banco UFMG, por favor, preencha os dados a seguir:")
 
-        novo_usuario.nome = input("Nome completo: ")
+        nome = input("Nome completo: ")
 
         while True:
-            novo_usuario.data_nascimento = input("Data de Nascimento (DD/MM/AAAA): ")
-            if Usuario.validar_data_nascimento(novo_usuario.data_nascimento):
+            data_nascimento = input("Data de Nascimento (DD/MM/AAAA): ")
+            if Usuario.validar_data_nascimento(data_nascimento):
                 break
 
-        novo_usuario.endereco = input("Endereço Completo: ")
+        endereco = input("Endereço Completo: ")
 
         while True:
-            novo_usuario.cpf = input("CPF (somente números, no formato XXXXXXXXXXX): ")
-            if len(novo_usuario.cpf) == 11 and novo_usuario.cpf.isdigit() and not Usuario.cpf_existente(novo_usuario.cpf):
+            cpf = input("CPF (somente números, no formato XXXXXXXXXXX): ")
+            if len(cpf) == 11 and cpf.isdigit() and not Usuario.cpf_existente(cpf):
                 break
             print("CPF inválido ou já existente.")
 
         print("\nRequisitos para senha:\n- Deve ter entre 8 e 30 caracteres.\n- Deve conter pelo menos uma letra maiúscula, um número e um caractere especial.")
         while True:
-            novo_usuario.senha = input("Senha desejada: ")
-            if Usuario.senha_valida(novo_usuario.senha):
+            senha = input("Senha desejada: ")
+            if Usuario.senha_valida(senha):
                 break
 
-        novo_usuario.numero_conta_corrente = Usuario.gerar_numero_conta_corrente()
+        numero_conta_corrente = Usuario.gerar_numero_conta_corrente()
+        novo_usuario = DadosUsuario(nome, senha, data_nascimento, endereco, cpf, numero_conta_corrente)
         Usuario.usuarios.append(novo_usuario)
         print("\nNovo usuário criado com sucesso!")
 
@@ -53,7 +95,7 @@ class Usuario:
         nome_usuario = input("Nome do usuário: ")
         senha_usuario = input("Senha: ")
 
-        usuario = next((u for u in Usuario.usuarios if u.numero_conta_corrente == numero_conta and u.nome == nome_usuario and u.senha == senha_usuario), None)
+        usuario = next((u for u in Usuario.usuarios if u.numero_conta_corrente == numero_conta and u.nome == nome_usuario and u._senha == senha_usuario), None)
 
         if usuario:
             confirmacao = input("Tem certeza que deseja deletar sua conta? (S/N): ").strip().upper()
