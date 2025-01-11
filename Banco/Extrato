@@ -1,23 +1,34 @@
-class Extrato:
+from abc import ABC, abstractmethod
+
+class RelatorioFinanceiro(ABC):
+    @abstractmethod
+    def adicionar_transacao(self, descricao, valor):
+        pass
+
+    @abstractmethod
+    def exibir_relatorio(self):
+        pass
+
+    @abstractmethod
+    def exportar_relatorio(self, caminho_arquivo):
+        pass
+
+class Extrato(RelatorioFinanceiro):
     def __init__(self):
-        self.transacoes = []  # Lista para armazenar as transações
+        self._transacoes = []
 
-    def informar_extrato(self):
-        for transacao in self.transacoes:
-            if transacao < 0:
-                print(f"TRANSFERÊNCIA: -R${-transacao:.2f}")
-            else:
-                print(f"DEPÓSITO: R${transacao:.2f}")
+    def adicionar_transacao(self, descricao, valor):
+        self._transacoes.append({"descricao": descricao, "valor": valor})
 
-    def adicionar_transacao(self, valor):
-        self.transacoes.append(valor)
+    def exibir_relatorio(self):
+        relatorio = "Extrato de Transações:\n"
+        for transacao in self._transacoes:
+            relatorio += f"{transacao['descricao']}: R$ {transacao['valor']:.2f}\n"
+        return relatorio
 
-    def exportar_extrato_digital(self, cc):
-        nome_arquivo = f"./extrato_{cc}.txt"
-        with open(nome_arquivo, "w") as saida:
-            for transacao in self.transacoes:
-                if transacao < 0:
-                    saida.write(f"TRANSFERÊNCIA: -R${-transacao:.2f}\n")
-                else:
-                    saida.write(f"DEPÓSITO: R${transacao:.2f}\n")
-        print(f"Extrato exportado para {nome_arquivo}")
+    def exportar_relatorio(self, caminho_arquivo):
+        try:
+            with open(caminho_arquivo, 'w', encoding='utf-8') as arquivo:
+                arquivo.write(self.exibir_relatorio())
+        except IOError as e:
+            print(f"Erro ao exportar o relatório: {e}")
