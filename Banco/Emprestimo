@@ -1,27 +1,61 @@
-class Emprestimo:
-    def __init__(self, valor_transferencia, parcelas):
-        self.valor_total = valor_transferencia
-        self.qtd_parcelas = parcelas
-        self.taxa_juros = 1.1
-        self.valor_pagamento = 0.0
+from abc import ABC, abstractmethod
 
-    def calcular_juros(self):
-        # Lógica para calcular juros do empréstimo
-        self.valor_pagamento = self.valor_total * self.taxa_juros
+class EmprestimoBase(ABC):
+    def __init__(self, salario, valor_emprestimo, numero_parcelas):
+        self._salario = salario
+        self._valor_emprestimo = valor_emprestimo
+        self._numero_parcelas = numero_parcelas
+        self._valor_parcela = self.calcular_valor_parcela()
 
+    @abstractmethod
     def calcular_valor_parcela(self):
-        # Lógica para calcular valor da parcela do empréstimo
-        self.calcular_juros()
-        print(f"Pagamento total: {self.valor_pagamento:.2f}")
-        print(f"Valor de cada Parcela: {self.valor_pagamento / self.qtd_parcelas:.2f}")
-        return self.valor_pagamento / self.qtd_parcelas
+        pass
 
-    def confirmar_solicitacao(self, salario):
-        # Lógica para confirmar a solicitação do empréstimo
-        if salario > (self.calcular_valor_parcela() / 2):
-            print("Solicitação confirmada")
-            return self.valor_total
-        else:
-            print("Salário insuficiente")
-            return 0.0
+    def validar_solicitacao(self):
+        return self._valor_parcela <= (self._salario / 2)
 
+    def exibir_detalhes(self):
+        detalhes = (
+            f"Salário: {self._salario}\n"
+            f"Valor do Empréstimo: {self._valor_emprestimo}\n"
+            f"Número de Parcelas: {self._numero_parcelas}\n"
+            f"Valor da Parcela: {self._valor_parcela:.2f}\n"
+        )
+        return detalhes
+
+    # Getters e Setters para encapsulamento
+    @property
+    def salario(self):
+        return self._salario
+
+    @salario.setter
+    def salario(self, valor):
+        self._salario = valor
+
+    @property
+    def valor_emprestimo(self):
+        return self._valor_emprestimo
+
+    @valor_emprestimo.setter
+    def valor_emprestimo(self, valor):
+        self._valor_emprestimo = valor
+
+    @property
+    def numero_parcelas(self):
+        return self._numero_parcelas
+
+    @numero_parcelas.setter
+    def numero_parcelas(self, valor):
+        self._numero_parcelas = valor
+
+class EmprestimoPessoal(EmprestimoBase):
+    def calcular_valor_parcela(self):
+        taxa_juros = 0.05  # Taxa fixa para empréstimos pessoais
+        valor_total = self._valor_emprestimo * (1 + taxa_juros)
+        return valor_total / self._numero_parcelas
+
+class EmprestimoImobiliario(EmprestimoBase):
+    def calcular_valor_parcela(self):
+        taxa_juros = 0.03  # Taxa reduzida para empréstimos imobiliários
+        valor_total = self._valor_emprestimo * (1 + taxa_juros)
+        return valor_total / self._numero_parcelas
