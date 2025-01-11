@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 import random
-from Saldo import Saldo
+
 
 class Usuario(ABC):
     def __init__(self, nome, cpf, data_nascimento, endereco, senha, numero_conta_corrente):
@@ -11,7 +11,6 @@ class Usuario(ABC):
         self._endereco = endereco
         self._senha = senha
         self._numero_conta_corrente = numero_conta_corrente
-        self._saldo = Saldo(numero_conta_corrente)
 
     @property
     def nome(self):
@@ -33,9 +32,12 @@ class Usuario(ABC):
     def numero_conta_corrente(self):
         return self._numero_conta_corrente
 
-    @property
-    def saldo(self):
-        return self._saldo
+    def validar_senha(self, senha):
+        return self._senha == senha
+
+    @staticmethod
+    def validar_cpf(cpf):
+        return len(cpf) == 11 and cpf.isdigit()
 
     @staticmethod
     def validar_data_nascimento(data):
@@ -50,8 +52,20 @@ class Usuario(ABC):
     def gerar_numero_conta_corrente():
         return str(random.randint(100000, 999999))
 
-    def validar_senha(self, senha):
-        return self._senha == senha
+    @staticmethod
+    def criar_usuario(tipo, **kwargs):
+        if not Usuario.validar_cpf(kwargs.get("cpf", "")):
+            raise ValueError("CPF inválido. Deve conter 11 dígitos.")
+
+        if not Usuario.validar_data_nascimento(kwargs.get("data_nascimento", "")):
+            raise ValueError("Data de nascimento inválida.")
+
+        if tipo == "Aluno":
+            return Aluno(**kwargs)
+        elif tipo == "Servidor":
+            return Servidor(**kwargs)
+        else:
+            raise ValueError(f"Tipo de usuário desconhecido: {tipo}")
 
     @abstractmethod
     def tipo_usuario(self):
@@ -59,20 +73,25 @@ class Usuario(ABC):
 
 
 class Aluno(Usuario):
-    def __init__(self, nome, cpf, data_nascimento, endereco, senha, numero_conta_corrente, numero_matricula, fumpista, nivel_fump=None):
+    def __init__(self, nome, cpf, data_nascimento, endereco, senha, numero_conta_corrente, numero_matricula, fumpista=False, nivel_fump=None):
         super().__init__(nome, cpf, data_nascimento, endereco, senha, numero_conta_corrente)
         self.numero_matricula = numero_matricula
         self.fumpista = fumpista
-        self.nivel_fump = nivel_fump if fumpista else None
+        self.nivel_fump = nivel_fump
 
     def tipo_usuario(self):
         return "Aluno"
 
+    def definir_nivel_fump(self, nivel):
+        if nivel not in [None, "I", "II", "III", "IV"]:
+            raise ValueError("Nível FUMP inválido.")
+        self.nivel_fump = nivel
+        self.fumpista = nivel is not None
 
-class Professor(Usuario):
-    def __init__(self, nome, cpf, data_nascimento, endereco, senha, numero_conta_corrente, numero_matricula):
+
+class Servidor(Usuario):
+    def __init__(self, nome, cpf, data_nascimento, endereco, senha, numero_conta_corrente):
         super().__init__(nome, cpf, data_nascimento, endereco, senha, numero_conta_corrente)
-        self.numero_matricula = numero_matricula
 
     def tipo_usuario(self):
-        return "Professor"
+        return "Servidor"
