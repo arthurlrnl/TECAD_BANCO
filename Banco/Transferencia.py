@@ -1,69 +1,33 @@
-from abc import ABC, abstractmethod
+class Transferencia:
+    @staticmethod
+    def realizar_transferencia(remetente, usuarios, numero_conta_destino):
+        conta_destino = next((usuario for usuario in usuarios if usuario.numero_conta_corrente == numero_conta_destino), None)
 
-class OperacaoFinanceira(ABC):
-    @abstractmethod
-    def executar(self):
-        pass
+        if not conta_destino:
+            print("Erro: Conta destino não encontrada.")
+            return False
 
-class Transferencia(OperacaoFinanceira):
-    def __init__(self, conta_origem, conta_destino, valor):
-        self._conta_origem = conta_origem
-        self._conta_destino = conta_destino
-        self._valor = valor
+        print(f"Você está enviando para: {conta_destino.nome}")
+        
+        while True:
+            try:
+                valor = float(input("Informe o valor da transferência: R$ "))
+                if valor <= 0:
+                    print("Erro: O valor deve ser positivo.")
+                    continue
+                break
+            except ValueError:
+                print("Erro: Informe um valor numérico válido.")
 
-    @property
-    def conta_origem(self):
-        return self._conta_origem
+        senha = input("Informe sua senha: ").strip()
+        if remetente.senha != senha:
+            print("Erro: Senha incorreta.")
+            return False
 
-    @property
-    def conta_destino(self):
-        return self._conta_destino
+        if not remetente.saldo.subtrair_saldo(valor):
+            print("Erro: Saldo insuficiente para a transferência.")
+            return False
 
-    @property
-    def valor(self):
-        return self._valor
-
-    @valor.setter
-    def valor(self, valor):
-        if valor <= 0:
-            raise ValueError("O valor da transferência deve ser positivo.")
-        self._valor = valor
-
-    def executar(self):
-        if self._conta_origem.subtrair_valor(self._valor):
-            self._conta_destino.adicionar_valor(self._valor)
-            return True
-        return False
-
-# Exemplo de uso:
-class Conta:
-    def __init__(self, saldo):
-        self._saldo = saldo
-
-    @property
-    def saldo(self):
-        return self._saldo
-
-    def adicionar_valor(self, valor):
-        if valor < 0:
-            raise ValueError("O valor a ser adicionado deve ser positivo.")
-        self._saldo += valor
-
-    def subtrair_valor(self, valor):
-        if valor < 0:
-            raise ValueError("O valor a ser subtraído deve ser positivo.")
-        if valor <= self._saldo:
-            self._saldo -= valor
-            return True
-        return False
-
-conta1 = Conta(1000)
-conta2 = Conta(500)
-
-transferencia = Transferencia(conta1, conta2, 200)
-if transferencia.executar():
-    print("Transferência realizada com sucesso!")
-    print(f"Saldo Conta 1: R$ {conta1.saldo:.2f}")
-    print(f"Saldo Conta 2: R$ {conta2.saldo:.2f}")
-else:
-    print("Transferência falhou!")
+        conta_destino.saldo.adicionar_saldo(valor)
+        print(f"Transferência de R$ {valor:.2f} realizada com sucesso para {conta_destino.nome}.")
+        return True
