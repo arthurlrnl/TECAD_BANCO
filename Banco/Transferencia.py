@@ -1,33 +1,45 @@
 class Transferencia:
-    @staticmethod
-    def realizar_transferencia(remetente, usuarios, numero_conta_destino):
-        conta_destino = next((usuario for usuario in usuarios if usuario.numero_conta_corrente == numero_conta_destino), None)
+    def __init__(self, remetente, destinatario, valor, senha):
+        self.remetente = remetente
+        self.destinatario = destinatario
+        self.valor = valor
+        self.senha = senha
+        self.status = "Pendente" 
 
-        if not conta_destino:
-            print("Erro: Conta destino não encontrada.")
+    def validar_transferencia(self):
+        """
+        Valida os critérios necessários para a transferência.
+        """
+     
+        if not self.remetente.validar_senha(self.senha):
+            self.status = "Rejeitada: senha incorreta"
             return False
 
-        print(f"Você está enviando para: {conta_destino.nome}")
-        
-        while True:
-            try:
-                valor = float(input("Informe o valor da transferência: R$ "))
-                if valor <= 0:
-                    print("Erro: O valor deve ser positivo.")
-                    continue
-                break
-            except ValueError:
-                print("Erro: Informe um valor numérico válido.")
-
-        senha = input("Informe sua senha: ").strip()
-        if remetente.senha != senha:
-            print("Erro: Senha incorreta.")
+        if not self.remetente.saldo.subtrair_saldo(self.valor):
+            self.status = "Rejeitada: saldo insuficiente"
             return False
 
-        if not remetente.saldo.subtrair_saldo(valor):
-            print("Erro: Saldo insuficiente para a transferência.")
-            return False
-
-        conta_destino.saldo.adicionar_saldo(valor)
-        print(f"Transferência de R$ {valor:.2f} realizada com sucesso para {conta_destino.nome}.")
         return True
+
+    def executar(self):
+        """
+        Executa a transferência se for válida.
+        """
+        if self.validar_transferencia():
+            self.destinatario.saldo.adicionar_saldo(self.valor)
+            self.status = "Aprovada"
+            self.remetente.extrato.adicionar_transacao("Transferência enviada", -self.valor)
+            self.destinatario.extrato.adicionar_transacao("Transferência recebida", self.valor)
+            return True
+        return False
+
+    def detalhes_transferencia(self):
+        """
+        Retorna um resumo da transferência.
+        """
+        return {
+            "remetente": self.remetente.nome,
+            "destinatario": self.destinatario.nome,
+            "valor": self.valor,
+            "status": self.status
+        }
