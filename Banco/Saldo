@@ -1,18 +1,29 @@
 class Saldo:
-    def __init__(self):
-        self._saldo = 0.0
+    def __init__(self, saldo_inicial=0):
+        self._saldo = saldo_inicial
 
-    def get_saldo(self):
-        """Retorna o saldo atual."""
+    @property
+    def saldo(self):
         return self._saldo
 
-    def adicionar_saldo(self, valor):
-        """Adiciona um valor ao saldo."""
+    @saldo.setter
+    def saldo(self, valor):
+        if valor < 0:
+            raise ValueError("O saldo não pode ser negativo.")
+        self._saldo = valor
+
+    def adicionar_valor(self, valor):
+        if valor < 0:
+            raise ValueError("O valor a ser adicionado deve ser positivo.")
         self._saldo += valor
 
-# Exemplo de uso:
-if __name__ == "__main__":
-    minha_conta = Saldo()
-    print(f"Saldo inicial: {minha_conta.get_saldo()}")
-    minha_conta.adicionar_saldo(100.0)
-    print(f"Saldo após adicionar 100.0: {minha_conta.get_saldo()}")
+    def subtrair_valor(self, valor):
+        if valor < 0:
+            raise ValueError("O valor a ser subtraído deve ser positivo.")
+        if valor <= self._saldo:
+            self._saldo -= valor
+            return True
+        return False
+
+    def exibir_saldo(self):
+        return f"Saldo atual: R$ {self._saldo:.2f}"
