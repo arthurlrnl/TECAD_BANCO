@@ -1,61 +1,68 @@
-from abc import ABC, abstractmethod
+class Emprestimo:
+    def __init__(self, renda, valor_emprestimo, numero_parcelas):
+        self.renda = renda
+        self.valor_emprestimo = valor_emprestimo
+        self.numero_parcelas = numero_parcelas
+        self.taxa_juros = 0.05
+        self.valor_parcela = self.calcular_valor_parcela()
 
-class EmprestimoBase(ABC):
-    def __init__(self, salario, valor_emprestimo, numero_parcelas):
-        self._salario = salario
-        self._valor_emprestimo = valor_emprestimo
-        self._numero_parcelas = numero_parcelas
-        self._valor_parcela = self.calcular_valor_parcela()
-
-    @abstractmethod
     def calcular_valor_parcela(self):
-        pass
+        
+        valor_total = self.valor_emprestimo * (1 + self.taxa_juros * self.numero_parcelas)
+        return valor_total / self.numero_parcelas
 
-    def validar_solicitacao(self):
-        return self._valor_parcela <= (self._salario / 2)
+    def validar_emprestimo(self, saldo):
+        
+        if saldo.saldo < 0:
+            print("Empréstimo negado: saldo negativo devido ao uso do limite.")
+            return False
 
-    def exibir_detalhes(self):
-        detalhes = (
-            f"Salário: {self._salario}\n"
-            f"Valor do Empréstimo: {self._valor_emprestimo}\n"
-            f"Número de Parcelas: {self._numero_parcelas}\n"
-            f"Valor da Parcela: {self._valor_parcela:.2f}\n"
-        )
-        return detalhes
+        if hasattr(saldo, 'emprestimo_ativo') and saldo.emprestimo_ativo:
+            print("Empréstimo negado: cliente já possui um empréstimo ativo.")
+            return False
 
-    # Getters e Setters para encapsulamento
-    @property
-    def salario(self):
-        return self._salario
+        limite_parcela = self.renda * 0.3
+        if self.valor_parcela > limite_parcela:
+            print("Empréstimo negado: parcela excede 30% da renda.")
+            return False
 
-    @salario.setter
-    def salario(self, valor):
-        self._salario = valor
+        return True
 
-    @property
-    def valor_emprestimo(self):
-        return self._valor_emprestimo
+    def registrar_emprestimo(self, saldo):
+        saldo.adicionar_saldo(self.valor_emprestimo)
+        saldo.emprestimo_ativo = True 
+        print(f"Empréstimo aprovado! Valor de R$ {self.valor_emprestimo:.2f} adicionado ao saldo.")
 
-    @valor_emprestimo.setter
-    def valor_emprestimo(self, valor):
-        self._valor_emprestimo = valor
+    @staticmethod
+    def solicitar_emprestimo(renda, saldo):
+        print("Bem-vindo ao sistema de empréstimos!")
+        print("Como estudante da UFMG, você possui um empréstimo pré-aprovado de R$ 500,00.")
 
-    @property
-    def numero_parcelas(self):
-        return self._numero_parcelas
+        try:
+            valor_pre_aprovado = 500.0
+            confirmar_pre_aprovado = input("Deseja utilizar o empréstimo pré-aprovado de R$ 500,00? (S/N): ").strip().upper()
+            if confirmar_pre_aprovado == 'S':
+                emprestimo = Emprestimo(renda, valor_pre_aprovado, 1)
+                if emprestimo.validar_emprestimo(saldo):
+                    emprestimo.registrar_emprestimo(saldo)
+                return
 
-    @numero_parcelas.setter
-    def numero_parcelas(self, valor):
-        self._numero_parcelas = valor
+            valor_emprestimo = float(input("Informe o valor do empréstimo desejado: R$ "))
+            numero_parcelas = int(input("Informe o número de parcelas: "))
+            
+            emprestimo = Emprestimo(renda, valor_emprestimo, numero_parcelas)
 
-class EmprestimoPessoal(EmprestimoBase):
-    def calcular_valor_parcela(self):
-        taxa_juros = 0.05  # Taxa fixa para empréstimos pessoais
-        valor_total = self._valor_emprestimo * (1 + taxa_juros)
-        return valor_total / self._numero_parcelas
+            print(f"Valor de cada parcela: R$ {emprestimo.valor_parcela:.2f}")
+            print(f"Número de parcelas: {numero_parcelas}")
 
-class EmprestimoImobiliario(EmprestimoBase):
-    def calcular_valor_parcela(self):
-        taxa_juros = 0.03  # Taxa reduzida para empréstimos imobiliários
-        valor_total = self._valor_emprestimo * (1 + taxa_juros)
-        return valor_total / self._numero_parcelas
+            if emprestimo.validar_emprestimo(saldo):
+                confirmar = input("Deseja confirmar o empréstimo? (S/N): ").strip().upper()
+                if confirmar == 'S':
+                    emprestimo.registrar_emprestimo(saldo)
+                else:
+                    print("Empréstimo cancelado pelo cliente.")
+            else:
+                print("Empréstimo não aprovado.")
+
+        except ValueError:
+            print("Erro: Informe valores válidos para o empréstimo.")
