@@ -1,5 +1,4 @@
-from BancoGUI import BancoGUI
-
 if __name__ == "__main__":
+    from BancoGUI import BancoGUI  # Certifique-se de importar corretamente
     app = BancoGUI()
-    app.iniciar()
+    app.janela.mainloop()  # Isso inicia a interface
