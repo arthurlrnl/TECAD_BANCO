@@ -1,126 +1,113 @@
-from Usuario import Usuario
-from Saldo import Saldo
+from DataManager import DataManager
+from Usuario import Aluno, Servidor
 from Transferencia import Transferencia
-from Emprestimo import Emprestimo
 from Extrato import Extrato
-from Carteirinha import Carteirinha
+from Emprestimo import EmprestimoEstudantil, EmprestimoPessoal
+import re
+from datetime import datetime
 
 class SistemaBancario:
     def __init__(self):
-        self.usuarios = []  # Lista de usuários cadastrados
+        self.data_manager = DataManager()
+        self.usuarios = self.data_manager.carregar_dados()
         self.usuario_logado = None
 
-    def executar_aplicativo(self):
-        while True:
-            print("\n=== Bem-vindo ao Banco UFMG ===")
-            print("1. Criar conta")
-            print("2. Fazer login")
-            print("0. Sair")
-            opcao = input("Escolha uma opção: ")
+    def criar_conta(self, tipo, dados_usuario):
+        cpf = dados_usuario.get("cpf", "").strip()
+        data_nascimento = dados_usuario.get("data_nascimento", "").strip()
+        senha = dados_usuario.get("senha", "").strip()
 
-            if opcao == "1":
-                self.criar_conta()
-            elif opcao == "2":
-                self.fazer_login()
-            elif opcao == "0":
-                print("Obrigado por usar o Banco UFMG. Até logo!")
-                break
-            else:
-                print("Opção inválida. Tente novamente.")
+        if not cpf.isdigit() or len(cpf) != 11:
+            raise ValueError("CPF inválido. Insira exatamente 11 números.")
+        try:
+            data_nasc_obj = datetime.strptime(data_nascimento, "%d/%m/%Y")
+            if data_nasc_obj > datetime.now():
+                raise ValueError("Data de nascimento inválida. Não pode estar no futuro.")
+        except ValueError:
+            raise ValueError("Data de nascimento inválida. Use o formato DD/MM/AAAA.")
+        if len(senha) < 8:
+            raise ValueError("A senha deve ter pelo menos 8 caracteres.")
+        if not re.search(r"[A-Z]", senha):
+            raise ValueError("A senha deve conter pelo menos uma letra maiúscula.")
+        if not re.search(r"\d", senha):
+            raise ValueError("A senha deve conter pelo menos um número.")
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", senha):
+            raise ValueError("A senha deve conter pelo menos um caractere especial (!@#$%^&*(), etc.).")
+        if any(u.cpf == cpf for u in self.usuarios):
+            raise ValueError("CPF já cadastrado.")
 
-    def criar_conta(self):
-        Usuario.criar_usuario()
+        if tipo == "Aluno":
+            usuario = Aluno(**dados_usuario)
+        elif tipo == "Professor":
+            usuario = Servidor(**dados_usuario)
+        else:
+            raise ValueError("Tipo de usuário inválido.")
 
-    def fazer_login(self):
-        cpf = input("Digite o CPF: ")
+        self.usuarios.append(usuario)
+        self.data_manager.salvar_dados(self.usuarios)
+        return usuario
+
+    def fazer_login(self, cpf, senha):
         usuario = next((u for u in self.usuarios if u.cpf == cpf), None)
+        if not usuario or not usuario.validar_senha(senha):
+            raise ValueError("CPF ou senha inválidos.")
+        self.usuario_logado = usuario
+        return usuario
 
-        if not usuario:
-            print("CPF não encontrado.")
-            return
+    def realizar_transferencia(self, cpf_destinatario, valor, senha):
+        if not self.usuario_logado:
+            raise ValueError("Nenhum usuário logado.")
 
-        for _ in range(3):
-            senha = input("Digite a senha: ")
-            if usuario.senha == senha:
-                self.usuario_logado = usuario
-                print(f"Login realizado com sucesso! Bem-vindo(a), {usuario.nome}.")
-                self.menu_usuario()
-                return
-            else:
-                print("Senha incorreta. Tente novamente.")
+        destinatario = next((u for u in self.usuarios if u.cpf == cpf_destinatario), None)
+        if not destinatario:
+            raise ValueError("Destinatário não encontrado.")
 
-        print("Número máximo de tentativas excedido.")
+        transferencia = Transferencia(self.usuario_logado, destinatario, valor, senha)
+        if not transferencia.executar():
+            raise ValueError(transferencia.mensagem)
 
-    def menu_usuario(self):
-        while True:
-            print("\n=== Menu Principal ===")
-            print("1. Exibir saldo")
-            print("2. Realizar transferência")
-            print("3. Exibir extrato")
-            print("4. Depósito")
-            print("5. Carteirinha")
-            print("6. Crédito (Empréstimo)")
-            print("0. Logout")
-            opcao = input("Escolha uma opção: ")
+        self.data_manager.salvar_dados(self.usuarios)
+        return transferencia
 
-            if opcao == "1":
-                self.exibir_saldo()
-            elif opcao == "2":
-                self.realizar_transferencia()
-            elif opcao == "3":
-                self.exibir_extrato()
-            elif opcao == "4":
-                self.realizar_deposito()
-            elif opcao == "5":
-                self.gerenciar_carteirinha()
-            elif opcao == "6":
-                self.solicitar_emprestimo()
-            elif opcao == "0":
-                print("Logout realizado. Voltando ao menu principal.")
-                self.usuario_logado = None
-                break
-            else:
-                print("Opção inválida. Tente novamente.")
+    def solicitar_emprestimo(self, tipo, valor, numero_parcelas):
+        if not self.usuario_logado:
+            raise ValueError("Nenhum usuário logado.")
+
+        saldo = self.usuario_logado.saldo
+
+        if tipo == "Estudantil":
+            emprestimo = EmprestimoEstudantil(valor, numero_parcelas)
+        elif tipo == "Pessoal":
+            emprestimo = EmprestimoPessoal(valor, numero_parcelas)
+        else:
+            raise ValueError("Tipo de empréstimo inválido.")
+
+        if emprestimo.validar_emprestimo(saldo):
+            emprestimo.registrar_emprestimo(saldo)
+            self.data_manager.salvar_dados(self.usuarios)
+            return emprestimo
+        else:
+            raise ValueError("Empréstimo não aprovado. Verifique as condições.")
 
     def exibir_saldo(self):
-        print(self.usuario_logado.saldo.exibir_saldo())
+        if not self.usuario_logado:
+            raise ValueError("Nenhum usuário logado.")
+        return self.usuario_logado.saldo.exibir_saldo()
 
-    def realizar_transferencia(self):
-        numero_conta_destino = input("Digite o número da conta destino: ")
-        Transferencia.realizar_transferencia(self.usuario_logado, self.usuarios, numero_conta_destino)
+    def exibir_extrato(self, filtro=None):
+        if not self.usuario_logado:
+            raise ValueError("Nenhum usuário logado.")
+        extrato = self.usuario_logado.saldo.exibir_historico()
+        return extrato
 
-    def exibir_extrato(self):
-        self.usuario_logado.extrato.exibir_extrato(self.usuario_logado.saldo.saldo)
+    def gerenciar_carteirinha(self, operacao, valor=None):
+        if not self.usuario_logado:
+            raise ValueError("Nenhum usuário logado.")
+        carteirinha = self.usuario_logado.carteirinha
 
-    def realizar_deposito(self):
-        try:
-            valor = float(input("Informe o valor do depósito: R$ "))
-            self.usuario_logado.saldo.adicionar_saldo(valor)
-            self.usuario_logado.extrato.adicionar_transacao("Depósito", valor)
-            print("Depósito realizado com sucesso!")
-        except ValueError:
-            print("Erro: Informe um valor válido.")
-
-    def gerenciar_carteirinha(self):
-        while True:
-            print("\n=== Carteirinha ===")
-            print("1. Adicionar saldo na carteirinha")
-            print("2. Liberar catraca do RU")
-            print("0. Voltar ao menu principal")
-            opcao = input("Escolha uma opção: ")
-
-            if opcao == "1":
-                try:
-                    valor = float(input("Informe o valor a ser adicionado: R$ "))
-                    self.usuario_logado.carteirinha.adicionar_saldo(valor)
-                except ValueError:
-                    print("Erro: Informe um valor válido.")
-            elif opcao == "2":
-                self.usuario_logado.carteirinha.liberar_catraca()
-            elif opcao == "0":
-                break
-            else:
-                print("Opção inválida. Tente novamente.")
-
-    def solicitar_emprestimo(self):
-        Emprestimo.solicitar_emprestimo(self.usuario_logado.renda, self.usuario_logado.saldo)
+        if operacao == "adicionar_saldo" and valor is not None:
+            carteirinha.adicionar_saldo(valor)
+        elif operacao == "liberar_catraca":
+            return carteirinha.liberar_catraca()
+        else:
+            raise ValueError("Operação inválida para a carteirinha.")
