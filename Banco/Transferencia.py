@@ -4,42 +4,39 @@ class Transferencia:
         self.destinatario = destinatario
         self.valor = valor
         self.senha = senha
-        self.status = "Pendente" 
+        self.status = "Pendente"
+        self.mensagem = ""
 
     def validar_transferencia(self):
-        """
-        Valida os critérios necessários para a transferência.
-        """
-     
         if not self.remetente.validar_senha(self.senha):
-            self.status = "Rejeitada: senha incorreta"
+            self.status = "Rejeitada"
+            self.mensagem = "Senha incorreta."
             return False
 
-        if not self.remetente.saldo.subtrair_saldo(self.valor):
-            self.status = "Rejeitada: saldo insuficiente"
+        if not self.remetente.saldo.debitar(self.valor):
+            self.status = "Rejeitada"
+            self.mensagem = "Saldo insuficiente para realizar a transferência."
             return False
 
         return True
 
     def executar(self):
-        """
-        Executa a transferência se for válida.
-        """
         if self.validar_transferencia():
-            self.destinatario.saldo.adicionar_saldo(self.valor)
+            self.destinatario.saldo.creditar(self.valor)
             self.status = "Aprovada"
-            self.remetente.extrato.adicionar_transacao("Transferência enviada", -self.valor)
-            self.destinatario.extrato.adicionar_transacao("Transferência recebida", self.valor)
+            self.mensagem = "Transferência realizada com sucesso."
+
+            self.remetente.saldo._registrar_historico("Transferência enviada", -self.valor)
+            self.destinatario.saldo._registrar_historico("Transferência recebida", self.valor)
             return True
+
         return False
 
     def detalhes_transferencia(self):
-        """
-        Retorna um resumo da transferência.
-        """
         return {
             "remetente": self.remetente.nome,
             "destinatario": self.destinatario.nome,
             "valor": self.valor,
-            "status": self.status
+            "status": self.status,
+            "mensagem": self.mensagem
         }
