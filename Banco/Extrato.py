@@ -2,40 +2,53 @@ from datetime import datetime
 import json
 
 class Extrato:
+    """
+    Classe para gerenciar o extrato de uma conta bancária.
+    Armazena e organiza as transações realizadas.
+    """
     def __init__(self):
-        self._transacoes = []
+        self._transacoes = []  # Lista de transações: {"data", "descricao", "valor"}
 
     def adicionar_transacao(self, descricao, valor):
+        """
+        Adiciona uma transação ao extrato.
+        """
         transacao = {
             "data": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
             "descricao": descricao,
             "valor": valor
         }
         self._transacoes.append(transacao)
-        print(f"Transação registrada: {descricao} - R$ {valor:.2f}")
+        return f"Transação registrada: {descricao} - R$ {valor:.2f}"
 
     def exibir_extrato(self, saldo_atual=None, filtro=None):
+        """
+        Retorna o extrato das transações como uma string.
+        Opcionalmente, filtra por tipo ou intervalo de datas.
+        """
         transacoes_filtradas = self._filtrar_transacoes(filtro)
-        print("\n=== Extrato da Conta ===")
+
+        extrato_str = ["=== Extrato da Conta ==="]
         for transacao in transacoes_filtradas:
             tipo = "Crédito" if transacao["valor"] > 0 else "Débito"
-            print(f"{transacao['data']} - {tipo}: {transacao['descricao']} - R$ {abs(transacao['valor']):.2f}")
+            extrato_str.append(f"{transacao['data']} - {tipo}: {transacao['descricao']} - R$ {abs(transacao['valor']):.2f}")
         if saldo_atual is not None:
-            print(f"Saldo Atual: R$ {saldo_atual:.2f}")
-        print("=======================\n")
+            extrato_str.append(f"Saldo Atual: R$ {saldo_atual:.2f}")
+        extrato_str.append("=======================")
+
+        return "\n".join(extrato_str)
 
     def exportar_extrato(self, caminho_arquivo, saldo_atual=None, filtro=None, formato="txt"):
+        """
+        Exporta o extrato para um arquivo.
+        Suporta formatos 'txt' e 'json'.
+        """
         try:
             transacoes_filtradas = self._filtrar_transacoes(filtro)
+
             if formato == "txt":
                 with open(caminho_arquivo, 'w', encoding='utf-8') as arquivo:
-                    arquivo.write("=== Extrato da Conta ===\n")
-                    for transacao in transacoes_filtradas:
-                        tipo = "Crédito" if transacao["valor"] > 0 else "Débito"
-                        arquivo.write(f"{transacao['data']} - {tipo}: {transacao['descricao']} - R$ {abs(transacao['valor']):.2f}\n")
-                    if saldo_atual is not None:
-                        arquivo.write(f"Saldo Atual: R$ {saldo_atual:.2f}\n")
-                    arquivo.write("=======================\n")
+                    arquivo.write(self.exibir_extrato(saldo_atual, filtro))
             elif formato == "json":
                 with open(caminho_arquivo, 'w', encoding='utf-8') as arquivo:
                     dados = {
@@ -43,11 +56,17 @@ class Extrato:
                         "saldo_atual": saldo_atual
                     }
                     json.dump(dados, arquivo, ensure_ascii=False, indent=4)
-            print(f"Extrato exportado para {caminho_arquivo}")
+            return f"Extrato exportado para {caminho_arquivo}"
         except IOError as e:
-            print(f"Erro ao exportar o extrato: {e}")
+            return f"Erro ao exportar o extrato: {e}"
 
     def _filtrar_transacoes(self, filtro):
+        """
+        Filtra transações com base em critérios fornecidos.
+        Filtros suportados:
+        - "tipo": "Crédito" ou "Débito"
+        - "data_inicio" e "data_fim": intervalo de datas
+        """
         if filtro is None:
             return self._transacoes
 

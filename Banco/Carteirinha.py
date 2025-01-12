@@ -23,6 +23,12 @@ class Carteirinha:
     def saldo_carteirinha(self):
         return self._saldo_carteirinha
 
+    @saldo_carteirinha.setter
+    def saldo_carteirinha(self, valor):
+        if not isinstance(valor, (int, float)) or valor < 0:
+            raise ValueError("O saldo deve ser um número positivo.")
+        self._saldo_carteirinha = valor
+
     @property
     def custo_refeicao(self):
         return self._custo_refeicao
@@ -41,21 +47,26 @@ class Carteirinha:
         """
         Adiciona saldo à carteirinha.
         """
-        if valor <= 0:
-            raise ValueError("O valor a ser adicionado deve ser maior que zero.")
-        self._saldo_carteirinha += valor
-        self._registrar_historico("Crédito", valor)
+        if not isinstance(valor, (int, float)) or valor <= 0:
+            raise ValueError("O valor para recarga deve ser um número positivo.")
+        self.saldo_carteirinha += valor
+        print(f"Saldo da carteirinha atualizado: R$ {self.saldo_carteirinha:.2f}")
 
-    def liberar_catraca(self):
-        """
-        Libera a catraca do RU, descontando o custo da refeição.
-        """
-        if self._saldo_carteirinha >= self._custo_refeicao:
-            self._saldo_carteirinha -= self._custo_refeicao
-            self._registrar_historico("Débito: Refeição no RU", -self._custo_refeicao)
-            return "Catraca liberada. Aproveite sua refeição!"
+    def liberar_catraca(self, categoria_acesso):
+        if categoria_acesso in self.PRECOS_FUMP:
+            valor = self.PRECOS_FUMP[categoria_acesso]
         else:
-            return "Saldo insuficiente na carteirinha para liberar a catraca."
+            valor = self.PRECO_PROFESSOR
+
+        if self.saldo_carteirinha < valor:
+            return f"Saldo insuficiente na carteirinha. Valor necessário: R$ {valor:.2f}"
+
+        self.saldo_carteirinha -= valor
+        self._registrar_historico("Débito: Acesso ao RU", valor)
+        return f"Catraca liberada. R$ {valor:.2f} deduzidos da carteirinha."
+
+    def exibir_saldo(self):
+        return self.saldo_carteirinha
 
     def _registrar_historico(self, descricao, valor):
         """
