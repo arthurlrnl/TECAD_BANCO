@@ -8,7 +8,7 @@ O projeto apresenta um aplicativo para serviços bancários digitais, utilizando
 
 ## Tema
 
-Aplicativo Bancário: Simplificando Finanças com Tecnologia Acessível
+Sistema Bancario UFMG: Uma Abordagem Moderna para Gestao Financeira Universitária
 
 ## Funcionalidades
 
