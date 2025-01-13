@@ -1,6 +1,6 @@
-# Projeto Final - Programação Orientada a Objetos
+# Projeto Final - POO
 
-Este repositório contém o Projeto Final da disciplina de Programação Orientada a Objetos, ministrada pela professora Gabriela Nunes Lopes na Universidade Federal de Minas Gerais.
+Este repositório contém o Projeto Final da disciplina ELE078, ministrada pela professora Gabriela Nunes Lopes/Cristiano Leite de Castro na Universidade Federal de Minas Gerais.
 
 ## Sobre o Projeto
 
