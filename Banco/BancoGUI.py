@@ -490,22 +490,6 @@ class BancoGUI:
             relief="flat"
             )
         botao_sair.pack(pady=10)
-    
-    # Botão de sair
-        botao_sair = tk.Button(
-            frame_acoes,
-            text="Sair",
-            font=("Arial", 12, "bold"),
-            fg="white",
-            bg="#800000",
-            activebackground="#600000",
-            activeforeground="white",
-            width=20,
-            height=2,
-            command=self.inicializar_tela_inicial,
-            relief="flat"
-    )
-        botao_sair.pack(pady=10)
 
     def tela_transferencia(self):
     # Limpa a tela atual
@@ -1122,7 +1106,3 @@ class BancoGUI:
     # Inserir o novo texto filtrado
         texto_extrato.insert(tk.END, extrato_filtrado)
         texto_extrato.config(state=tk.DISABLED)
-
-if __name__ == "__main__":
-    gui = BancoGUI()
-    gui.janela.mainloop()
