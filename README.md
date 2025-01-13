@@ -29,6 +29,6 @@ Disponibilizando empréstimos com condições especiais para estudantes, como ta
 Relatórios e extratos:
 Uma interface que exibe de forma clara o histórico financeiro, ajudando na organização e no planejamento.
 
-##Conclusão
+## Conclusão
 
 Este projeto foi desenvolvido com o intuito de exemplificar como a tecnologia e a automação podem transformar e otimizar o ambiente acadêmico, promovendo uma experiência mais integrada e acessível para os estudantes. Embora seja um protótipo acadêmico, ele demonstra o potencial impacto positivo que soluções como essa podem trazer para universidades e seus alunos. De forma prática, acredito que iniciativas como essa poderiam gerar uma melhoria significativa na vida dos estudantes, promovendo uma gestão financeira mais eficiente e contribuindo para a modernização do ambiente universitário.
