@@ -36,9 +36,6 @@ class Usuario(ABC):
         return self._numero_conta_corrente
 
     def validar_senha(self, senha):
-        """
-        Verifica se a senha fornecida está correta.
-        """
         return self._senha == senha
     
     @property
@@ -53,7 +50,6 @@ class Usuario(ABC):
     def parcelas_restantes(self):
         return self._parcelas_restantes
 
-# Add these methods to handle loan state
     def iniciar_emprestimo(self, valor, parcelas):
         self._emprestimo_ativo = True
         self._valor_emprestimo = valor
@@ -66,17 +62,12 @@ class Usuario(ABC):
 
     @staticmethod
     def validar_cpf(cpf):
-        """
-        Valida o formato e a estrutura de um CPF.
-        Apenas verifica o comprimento e se é numérico.
-        """
+
         return len(cpf) == 11 and cpf.isdigit()
 
     @staticmethod
     def validar_data_nascimento(data):
-        """
-        Verifica se a data de nascimento está no passado e é válida.
-        """
+ 
         try:
             hoje = datetime.now()
             data_nasc = datetime.strptime(data, "%d/%m/%Y")
@@ -86,10 +77,7 @@ class Usuario(ABC):
 
     @staticmethod
     def criar_usuario(tipo, **kwargs):
-        """
-        Cria uma instância de Aluno ou Servidor com base no tipo.
-        Valida os dados antes de criar o usuário.
-        """
+
         if not Usuario.validar_cpf(kwargs.get("cpf", "")):
             raise ValueError("CPF inválido. Deve conter 11 dígitos.")
 
@@ -107,17 +95,13 @@ class Usuario(ABC):
     def tipo_usuario(self):
         pass
     
-    contas_existentes = set()  # Simula um armazenamento de contas já usadas
+    contas_existentes = set() 
 
     @staticmethod
     def gerar_numero_conta_corrente():
         while True:
-            # Gera um número aleatório de 6 dígitos
             novo_numero = random.randint(100000, 999999)
-
-            # Verifica se o número já foi usado
             if novo_numero not in Usuario.contas_existentes:
-                # Adiciona o número ao conjunto de contas existentes
                 Usuario.contas_existentes.add(novo_numero)
                 return novo_numero
 
@@ -133,9 +117,7 @@ class Aluno(Usuario):
         return "Aluno"
 
     def definir_nivel_fump(self, nivel):
-        """
-        Define o nível FUMP do aluno.
-        """
+
         if nivel not in [None, "I", "II", "III", "IV"]:
             raise ValueError("Nível FUMP inválido.")
         self.nivel_fump = nivel
