@@ -8,9 +8,9 @@ class Saldo:
     def __init__(self, numero_conta, callback_salvar=None):
         self._saldo = 0.0
         self.numero_conta = numero_conta
-        self._historico = []  # Histórico de movimentações
-        self._callback_salvar = callback_salvar  # Callback para salvar os dados
-        self._extrato = Extrato()  # Gerencia o histórico de transações
+        self._historico = []
+        self._callback_salvar = callback_salvar
+        self._extrato = Extrato() 
 
     @property
     def saldo(self):
@@ -25,7 +25,7 @@ class Saldo:
         self._saldo += valor
         self._registrar_historico("Crédito", valor)
         if self._callback_salvar:
-            self._callback_salvar()  # Salva os dados após atualizar o saldo
+            self._callback_salvar() 
         return f"R$ {valor:.2f} creditados no saldo."
 
     def debitar(self, valor):
@@ -38,7 +38,7 @@ class Saldo:
             self._saldo -= valor
             self._registrar_historico("Débito", -valor)
             if self._callback_salvar:
-                self._callback_salvar()  # Salva os dados após debitar o saldo
+                self._callback_salvar() 
             return f"R$ {valor:.2f} debitados do saldo."
 
         return "Saldo insuficiente."
