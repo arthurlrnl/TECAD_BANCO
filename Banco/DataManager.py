@@ -8,9 +8,6 @@ class DataManager:
         self._arquivo_dados = arquivo_dados
 
     def salvar_dados(self, usuarios):
-        """
-        Salva os dados dos usuários em um arquivo JSON.
-        """
         dados_para_salvar = [self._serializar_usuario(usuario) for usuario in usuarios]
         try:
             with open(self._arquivo_dados, "w", encoding="utf-8") as arquivo:
@@ -20,10 +17,6 @@ class DataManager:
             print(f"Erro ao salvar os dados: {e}")
 
     def carregar_dados(self):
-        """
-        Carrega os dados dos usuários de um arquivo JSON.
-        Retorna instâncias de `Aluno` ou `Servidor`.
-        """
         try:
             with open(self._arquivo_dados, "r", encoding="utf-8") as arquivo:
                 dados = json.load(arquivo)
@@ -36,9 +29,6 @@ class DataManager:
             return []
 
     def verificar_cpf_existente(self, cpf):
-        """
-        Verifica se um CPF já existe no sistema.
-        """
         usuarios = self.carregar_dados()
         return any(usuario.cpf == cpf for usuario in usuarios)
 
@@ -53,7 +43,7 @@ class DataManager:
             "cpf": usuario.cpf,
             "data_nascimento": usuario.data_nascimento,
             "endereco": usuario.endereco,
-            "senha": usuario._senha,  # Pode substituir por um hash se necessário
+            "senha": usuario._senha,
             "numero_conta_corrente": usuario.numero_conta_corrente,
             "numero_matricula": getattr(usuario, "numero_matricula", None),
             "saldo": usuario.saldo.saldo,
