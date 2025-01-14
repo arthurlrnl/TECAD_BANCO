@@ -2,17 +2,10 @@ from datetime import datetime
 import json
 
 class Extrato:
-    """
-    Classe para gerenciar o extrato de uma conta bancária.
-    Armazena e organiza as transações realizadas.
-    """
     def __init__(self):
-        self._transacoes = []  # Lista de transações: {"data", "descricao", "valor"}
+        self._transacoes = []
 
     def adicionar_transacao(self, descricao, valor):
-        """
-        Adiciona uma transação ao extrato.
-        """
         transacao = {
             "data": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
             "descricao": descricao,
@@ -22,10 +15,6 @@ class Extrato:
         return f"Transação registrada: {descricao} - R$ {valor:.2f}"
 
     def exibir_extrato(self, saldo_atual=None, filtro=None):
-        """
-        Retorna o extrato das transações como uma string.
-        Opcionalmente, filtra por tipo ou intervalo de datas.
-        """
         transacoes_filtradas = self._filtrar_transacoes(filtro)
 
         extrato_str = ["=== Extrato da Conta ==="]
@@ -39,10 +28,6 @@ class Extrato:
         return "\n".join(extrato_str)
 
     def exportar_extrato(self, caminho_arquivo, saldo_atual=None, filtro=None, formato="txt"):
-        """
-        Exporta o extrato para um arquivo.
-        Suporta formatos 'txt' e 'json'.
-        """
         try:
             transacoes_filtradas = self._filtrar_transacoes(filtro)
 
@@ -61,12 +46,6 @@ class Extrato:
             return f"Erro ao exportar o extrato: {e}"
 
     def _filtrar_transacoes(self, filtro):
-        """
-        Filtra transações com base em critérios fornecidos.
-        Filtros suportados:
-        - "tipo": "Crédito" ou "Débito"
-        - "data_inicio" e "data_fim": intervalo de datas
-        """
         if filtro is None:
             return self._transacoes
 
