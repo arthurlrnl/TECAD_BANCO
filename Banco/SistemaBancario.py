@@ -128,9 +128,6 @@ class SistemaBancario:
             raise ValueError("Operação inválida para a carteirinha.")
             
     def executar_transferencias_periodicas(self):
-        """
-        Realiza transferências automáticas no dia 5 de cada mês.
-        """
         data_atual = datetime.now()
         if data_atual.day != 5:
             return
@@ -171,9 +168,6 @@ class SistemaBancario:
                     print(f"Erro ao pagar salário para {usuario.nome}: {e}")
 
     def _realizar_transferencia_automatica(self, origem, destino, valor, descricao):
-        """
-        Realiza uma transferência automática de origem para destino.
-        """
         if origem.saldo < valor:
             raise ValueError(f"Saldo insuficiente para transferir R$ {valor:.2f}")
 
@@ -190,15 +184,8 @@ class SistemaBancario:
         
 
     def criar_conta(self, tipo_usuario, dados):
-        # Remover a chave 'tipo' do dicionário dados, se existir
         dados = {k: v for k, v in dados.items() if k != "tipo"}
-
-        # Cria uma instância de Aluno ou Servidor usando o método estático da classe Usuario
         novo_usuario = Usuario.criar_usuario(tipo_usuario, **dados)
-
-        # Associa recursos ao novo usuário (saldo, carteirinha, etc.)
         self.associar_recursos_ao_usuario(novo_usuario)
-
-        # Salva os dados atualizados no sistema
         self._salvar_dados()
 
