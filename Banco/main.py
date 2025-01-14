@@ -3,7 +3,7 @@ if __name__ == "__main__":
     from SistemaBancario import SistemaBancario
 
     sistema = SistemaBancario()
-    sistema.executar_transferencias_periodicas()  # Executa transferências automáticas, se aplicável
+    sistema.executar_transferencias_periodicas()
 
     app = BancoGUI()
     app.janela.mainloop()
